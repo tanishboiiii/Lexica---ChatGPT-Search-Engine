@@ -4,35 +4,53 @@ export default function Results({ data }) {
   if (!data) return null
 
   const items = Array.isArray(data.results) ? data.results : []
-  const header = data.ok === false ? "Search error" : `${items.length} results`
+  const errored = data?.ok === false
+  const header = errored
+    ? "Search error"
+    : `${items.length} result${items.length === 1 ? "" : "s"}`
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <div className="muted" style={{ marginBottom: 8 }}>
+    <div style={{ marginTop: 8 }}>
+      <div className="section-title" aria-live="polite">
         {header}
       </div>
 
-      {data.ok === false && (
-        <pre className="error">{String(data.error || "Unknown error")}</pre>
+      {errored && (
+        <pre className="error" role="alert">
+          {String(data.error || "Unknown error")}
+        </pre>
       )}
 
       <ul className="result-list">
-        {items.map((r, i) => (
-          <li key={`${r.conv_id}-${r.msg}-${i}`} className="result-item">
-            <div className="result-meta">
-              <span>{new Date(r.ts).toLocaleString()}</span>
-              <span> · </span>
-              <span>{r.role}</span>
-              <span> · </span>
-              <span>
-                score:{" "}
-                {typeof r.score === "number" ? r.score.toFixed(3) : r.score}
-              </span>
-            </div>
-            <div className="result-title">{r.title}</div>
-            {r.snippet && <div className="result-snippet">{r.snippet}</div>}
-          </li>
-        ))}
+        {items.map((r, i) => {
+          const ts = r?.ts ? new Date(r.ts).toLocaleString() : ""
+          const score =
+            typeof r?.score === "number" ? r.score.toFixed(3) : r?.score ?? ""
+
+          return (
+            <li
+              key={`${r.conv_id}-${r.msg}-${i}`}
+              className="result-item surface"
+            >
+              <div className="result-meta">
+                <span className="meta">{ts}</span>
+                <span className="dot">•</span>
+                <span className="meta">{r.role}</span>
+                {score !== "" && (
+                  <>
+                    <span className="dot">•</span>
+                    <span className="chip chip-score" title="Similarity score">
+                      score&nbsp;{score}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {r.title && <div className="result-title">{r.title}</div>}
+              {r.snippet && <div className="result-snippet">{r.snippet}</div>}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

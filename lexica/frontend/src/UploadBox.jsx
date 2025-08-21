@@ -143,15 +143,11 @@ export default function UploadBox({ onUploaded }) {
   return (
     <div className="uploadbox">
       <div
-        className="dropzone"
+        className={`dropzone ${busy ? "disabled" : ""}`}
         onDrop={onDrop}
         onDragOver={onDragOver}
-        style={{
-          border: "1px dashed #bbb",
-          padding: 16,
-          borderRadius: 8,
-          background: "#fafafa",
-        }}
+        role="button"
+        aria-label="Upload your ChatGPT export"
       >
         <input
           ref={fileRef}
@@ -160,63 +156,42 @@ export default function UploadBox({ onUploaded }) {
           onChange={onPickFile}
           disabled={busy}
         />
-        <div className="muted" style={{ marginTop: 6 }}>
+        <div className="muted hint">
           Drag & drop or choose your <code>conversations.json</code> or exported{" "}
           <code>.zip</code>.
         </div>
       </div>
 
       {phase === "uploading" && (
-        <div style={{ marginTop: 10 }}>
+        <div className="upload-progress">
           <div className="muted">Uploading… {progress}%</div>
-          <div style={{ height: 8, background: "#eee", borderRadius: 6 }}>
-            <div
-              style={{
-                width: `${progress}%`,
-                height: 8,
-                background: "#000",
-                borderRadius: 6,
-                transition: "width 120ms linear",
-              }}
-            />
+          <div className="progress">
+            <div className="bar" style={{ width: `${progress}%` }} />
+            <div className="label">{progress}%</div>
           </div>
         </div>
       )}
 
       {datasetId && (
-        <div className="muted" style={{ marginTop: 10 }}>
+        <div className="muted dataset-line">
           Dataset: <code>{datasetId}</code>{" "}
           {phase !== "done" && "(processing…)"}
         </div>
       )}
 
       {log.length > 0 && (
-        <div style={{ marginTop: 10 }}>
-          <ul style={{ margin: 0, paddingLeft: 16 }}>
+        <div className="log">
+          <ul>
             {log.map((l, i) => (
-              <li key={i} style={{ fontSize: 14 }}>
-                {l}
-              </li>
+              <li key={i}>{l}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {err && (
-        <div
-          style={{
-            marginTop: 10,
-            color: "#a10000",
-            background: "#fff1f1",
-            padding: 8,
-            borderRadius: 6,
-          }}
-        >
-          {err}
-        </div>
-      )}
+      {err && <div className="error">{err}</div>}
 
-      <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+      <div className="actions-row">
         <button className="btn" onClick={reset} disabled={busy}>
           Reset
         </button>

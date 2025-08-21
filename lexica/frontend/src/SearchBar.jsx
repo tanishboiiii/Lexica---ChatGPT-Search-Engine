@@ -6,16 +6,17 @@ export default function SearchBar({ datasetId, onResults }) {
   const [role, setRole] = useState("")
   const [hasCode, setHasCode] = useState("")
   const [loading, setLoading] = useState(false)
+
   const disabled = !datasetId || !q || loading
 
   async function onSubmit(e) {
     e.preventDefault()
-    if (!datasetId) return
+    if (!datasetId || !q) return
     setLoading(true)
     try {
       const params = new URLSearchParams({ q, k: String(k) })
       if (role) params.set("role", role)
-      if (hasCode) params.set("has_code", hasCode) // backend expects has_code
+      if (hasCode) params.set("has_code", hasCode)
       const url = `http://localhost:8000/datasets/${datasetId}/search?${params.toString()}`
       const res = await fetch(url)
       const data = await res.json()
@@ -29,15 +30,31 @@ export default function SearchBar({ datasetId, onResults }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="searchbar">
+    <form
+      onSubmit={onSubmit}
+      className="searchbar"
+      role="search"
+      aria-label="Lexica search"
+    >
       <div className="row">
         <input
           className="input"
-          placeholder="Search your ChatGPT history…"
+          placeholder={
+            !datasetId
+              ? "Upload a dataset first…"
+              : "Search your ChatGPT history…"
+          }
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          disabled={!datasetId || loading}
+          aria-disabled={!datasetId || loading}
+          aria-label="Search query"
         />
-        <button className="btn" disabled={disabled}>
+        <button
+          className="btn"
+          disabled={disabled}
+          aria-busy={loading || undefined}
+        >
           {loading ? "Searching…" : "Search"}
         </button>
       </div>
@@ -51,12 +68,17 @@ export default function SearchBar({ datasetId, onResults }) {
             max={100}
             value={k}
             onChange={(e) => setK(Number(e.target.value))}
+            disabled={!datasetId || loading}
           />
         </label>
 
         <label>
           Role:
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            disabled={!datasetId || loading}
+          >
             <option value="">any</option>
             <option value="user">user</option>
             <option value="assistant">assistant</option>
@@ -65,7 +87,11 @@ export default function SearchBar({ datasetId, onResults }) {
 
         <label>
           Has code:
-          <select value={hasCode} onChange={(e) => setHasCode(e.target.value)}>
+          <select
+            value={hasCode}
+            onChange={(e) => setHasCode(e.target.value)}
+            disabled={!datasetId || loading}
+          >
             <option value="">either</option>
             <option value="true">yes</option>
             <option value="false">no</option>
